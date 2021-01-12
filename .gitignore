@@ -1,0 +1,6 @@
+# Ignore IDE file
+.idea
+
+# Ignore api files
+api/mode_modules/
+api/package-lock.json
