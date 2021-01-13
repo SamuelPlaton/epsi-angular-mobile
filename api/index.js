@@ -2,13 +2,27 @@ import SQLInstance from './SQLInstance.js';
 import express from 'express';
 
 // Create our express App
-const app = express();
+export const app = express();
 app.use(express.json());
 
 // Create our SQL Instance, then connect us to it
-const sqlInstance = new SQLInstance("localhost", "root", "", "books_database");
+export const sqlInstance = new SQLInstance("localhost", "root", "", "troc");
 sqlInstance.connect();
 
+
+// Method GET of all sectors
+app.get('/sectors', (request, response) => {
+  sqlInstance.request("SELECT * FROM SECTORS").then(result => {
+    response.send(result);
+  });
+});
+
+// Method GET of all our user data
+app.get('/users/:id', (request, response) => {
+  sqlInstance.request("SELECT * FROM USERS WHERE ID = ?", [request.params.id]).then(result => {
+    response.send(result);
+  });
+});
 
 // Method GET of all of our books
 app.get('/books', (request, response) => {
