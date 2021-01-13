@@ -1,11 +1,14 @@
 import { app, sqlInstance } from '..';
 import { v4 as uuidv4 } from 'uuid';
 
-// Method GET of all our connected user data combined to his sectors and services
+// Method GET of all data of a user
 app.get('/users/:id', (request, response) => {
-  sqlInstance.request("SELECT * FROM USERS U, SECTORS S1, SERVICES S2  WHERE U.ID = ? AND S1.ID IN U.SECTORS AND " +
-    "(S2.APPLICANT = U.ID OR S2.WORKER = U.ID)"
-    [request.params.id]).then(result => {
+  // todo: don't retrieve tokens
+  // Retrieve our Users, his sectors and services affiliated
+  sqlInstance.request("SELECT * FROM USERS U, SECTORS S1, SERVICES S2 WHERE U.ID = ? " +
+    "AND S1.ID IN (SELECT US.ID_SECTOR FROM USERS_SECTORS US WHERE US.ID_USER = ?) " +
+    "AND (S2.APPLICANT = U.ID OR S2.WORKER = U.ID)"
+    [request.params.id, request.params.id]).then(result => {
     response.send(result);
   });
 });
@@ -36,7 +39,8 @@ app.post('/users', (request, response) => {
     throw new Error('Error in post parameters');
   }
 
-  const sql = "INSERT INTO USERS(ID, FIRSTNAME, LASTNAME, GENDER, EMAIL, TOKEN, BIRTHDATE, PHONE, SECTORS, LOCALIZATION) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+  // Insert our user
+  const sql = "INSERT INTO USERS(ID, FIRSTNAME, LASTNAME, GENDER, EMAIL, TOKEN, BIRTHDATE, PHONE, LOCALIZATION) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)";
   sqlInstance.request(sql,
     [uuid,
     params.firstName,
@@ -46,11 +50,15 @@ app.post('/users', (request, response) => {
     params.password,
     params.birthDate,
     params.phone,
-    JSON.stringify(params.sectors),
     params.localization]).then(result => {
     response.send("");
     response.status(201).end();
   });
+
+  // Insert his sectors
+  params.sectors.map(sector => {
+    sqlInstance.request("INSERT INTO USERS_SECTORS(ID_SECTOR, ID_USER) VALUES (?, ?)", [sector, uuid]);
+  })
 });
 
 // Method PUT to modify a user
@@ -60,7 +68,8 @@ app.put('/users/:id', (request, response) => {
     throw new Error('Error in post parameters');
   }
 
-  const sql = "UPDATE USERS SET FIRSTNAME = ?, LASTNAME = ?, GENDER = ?, EMAIL = ?, PHONE = ?, SECTORS = ?, LOCALIZATION = ? WHERE ID = ?";
+  // Update our user
+  const sql = "UPDATE USERS SET FIRSTNAME = ?, LASTNAME = ?, GENDER = ?, EMAIL = ?, PHONE = ?, LOCALIZATION = ? WHERE ID = ?";
   sqlInstance.request(sql,
     [
       params.firstName,
@@ -68,12 +77,21 @@ app.put('/users/:id', (request, response) => {
       params.gender,
       params.email,
       params.phone,
-      JSON.stringify(params.sectors),
       params.localization,
       params.id]).then(result => {
     response.send("");
     response.status(200).end();
   });
+
+  // Update his sectors
+  params.sectors.map(sector => {
+    if(sector.state == "delete"){
+      sqlInstance.request("DELETE FROM USERS_SECTORS WHERE ID_SECTOR = ? AND ID_USER = ?", [sector, params.id]);
+    }else if(sector.state == "add" ){
+      sqlInstance.request("INSERT INTO USERS_SECTORS(ID_SECTOR, ID_USER) VALUES (?, ?)", [sector, params.id]);
+    }
+  })
 });
 
 // todo: method to change a password
+// todo: make connexion
