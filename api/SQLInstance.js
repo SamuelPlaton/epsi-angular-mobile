@@ -2,6 +2,7 @@ import mysql from 'mysql';
 
 export default class SQLInstance{
 
+  // App constructor create a MYSQL Connection
   constructor(host, user, password, database) {
     this.con = mysql.createConnection({
       host: host,
@@ -12,6 +13,7 @@ export default class SQLInstance{
     console.log("SQL Connector created !");
   }
 
+  // Connect our MYSQL Connection
   connect(){
     this.con.connect(function(err) {
       if (err) throw err;
@@ -19,6 +21,7 @@ export default class SQLInstance{
     });
   }
 
+  // Make a query and send result
   request(request, parameters = undefined){
     return new Promise((resolve, reject) => {
       this.con.query(request, parameters, function (err, result) {
@@ -28,6 +31,7 @@ export default class SQLInstance{
     })
   }
 
+  // Close connection
   end(){
     this.con.end()
   }

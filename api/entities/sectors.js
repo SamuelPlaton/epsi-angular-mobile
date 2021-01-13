@@ -8,6 +8,7 @@ app.get('/sectors', (request, response) => {
 });
 
 // Select selected sectors
+// todo: check if it will be used
 app.get('/sectorsSelected', (request, response) => {
   sqlInstance.request("SELECT * FROM SECTORS WHERE ID IN ?", [request.body.sectors]).then(result => {
     response.send(result);

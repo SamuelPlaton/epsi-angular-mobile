@@ -2,5 +2,5 @@
 .idea
 
 # Ignore api files
-api/mode_modules/
+api/node_modules/
 api/package-lock.json
