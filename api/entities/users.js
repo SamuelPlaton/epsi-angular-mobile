@@ -2,6 +2,23 @@ import { app, sqlInstance } from '..';
 import { v4 as uuidv4 } from 'uuid';
 
 // Method GET of all data of a user
+/**
+ * @swagger
+ *
+ * /users/{id}:
+ *   get:
+ *     tags:
+ *       - users
+ *     produces:
+ *       - application/json
+ *     summary:
+ *       - Get all data from a user
+ *     responses:
+ *      '200':
+ *        description: A user and his sectors and services
+ *
+ *
+ */
 app.get('/users/:id', (request, response) => {
   // todo: don't retrieve tokens
   // Retrieve our Users, his sectors and services affiliated
@@ -13,25 +30,119 @@ app.get('/users/:id', (request, response) => {
   });
 });
 
+/**
+ * @swagger
+ *
+ * /users:
+ *   get:
+ *     tags:
+ *       - users
+ *     produces:
+ *       - application/json
+ *     summary:
+ *       - Get a list of users from the database
+ *     requestBody:
+ *      content:
+ *        application/json:
+ *          schema:
+ *            type: object
+ *            properties:
+ *              ids:
+ *                type: array
+ *            example:
+ *              ids: [1, 2, 3]
+ *
+ *     responses:
+ *      '200':
+ *        description: Array of users
+ *
+ *
+ */
 // Method GET of all selected users data
 app.get('/users', (request, response) => {
-  if(!params.ids){
+  if(!request.body.ids){
     throw new Error('Error in parameters, ids missing');
   }
-  sqlInstance.request("SELECT * FROM USERS WHERE ID IN ?", [request.body.id]).then(result => {
+  sqlInstance.request("SELECT * FROM USERS WHERE ID IN ?", [request.body.ids]).then(result => {
     response.send(result);
   });
 });
 
 // Method DELETE for a user
+/**
+ * @swagger
+ *
+ * /users/{id}:
+ *   delete:
+ *     tags:
+ *       - users
+ *     produces:
+ *       - application/json
+ *     summary:
+ *       - Delete a user from the database
+ *     responses:
+ *      '204':
+ *        description: DELETED
+ */
 app.delete('/users/:id', (request, response) => {
   sqlInstance.request("DELETE FROM USERS WHERE ID = ?", [request.params.id]).then(result => {
     response.send("");
-    response.status(200).end();
+    response.status(204).end();
   });
 });
 
 // Method POST for a user
+/**
+ * @swagger
+ *
+ * /users:
+ *   post:
+ *     tags:
+ *       - users
+ *     produces:
+ *       - application/json
+ *     summary:
+ *       - Add a user to the database
+ *     requestBody:
+ *      content:
+ *        application/json:
+ *          schema:
+ *            type: object
+ *            properties:
+ *            firstName:
+ *              type: string
+ *            lastName:
+ *              type: string
+ *            gender:
+ *              type: string
+ *            email:
+ *              type: string
+ *            password:
+ *              type: string
+ *            birthDate:
+ *              type: string
+ *            phone:
+ *              type: string
+ *            sectors:
+ *              type: array
+ *            localization:
+ *              type: string
+ *            example:
+ *              firstName: string
+ *              lastName: string
+ *              gender: male of female or other
+ *              email: string
+ *              password: string
+ *              birthDate: Date
+ *              phone: string
+ *              sectors: array of ids
+ *              localization: string
+ *     responses:
+ *      '201':
+ *        description: Posted
+ *
+ *
+ */
 app.post('/users', (request, response) => {
   const params = request.body;
   const uuid = uuidv4();
@@ -61,6 +172,51 @@ app.post('/users', (request, response) => {
   })
 });
 
+/**
+ * @swagger
+ *
+ * /users:
+ *   put:
+ *     tags:
+ *       - users
+ *     produces:
+ *       - application/json
+ *     summary:
+ *       - Update a user to the database
+ *     requestBody:
+ *      content:
+ *        application/json:
+ *          schema:
+ *            type: object
+ *            properties:
+ *            firstName:
+ *              type: string
+ *            lastName:
+ *              type: string
+ *            gender:
+ *              type: string
+ *            email:
+ *              type: string
+ *            phone:
+ *              type: string
+ *            sectors:
+ *              type: array
+ *            localization:
+ *              type: string
+ *            example:
+ *              firstName: string
+ *              lastName: string
+ *              gender: male of female or other
+ *              email: string
+ *              phone: string
+ *              sectors: array of object containing state (delete or add) and a id
+ *              localization: string
+ *     responses:
+ *      '200':
+ *        description: Updated
+ *
+ *
+ */
 // Method PUT to modify a user
 app.put('/users/:id', (request, response) => {
   const params = request.body;
@@ -86,9 +242,9 @@ app.put('/users/:id', (request, response) => {
   // Update his sectors
   params.sectors.map(sector => {
     if(sector.state == "delete"){
-      sqlInstance.request("DELETE FROM USERS_SECTORS WHERE ID_SECTOR = ? AND ID_USER = ?", [sector, params.id]);
+      sqlInstance.request("DELETE FROM USERS_SECTORS WHERE ID_SECTOR = ? AND ID_USER = ?", [sector.id, params.id]);
     }else if(sector.state == "add" ){
-      sqlInstance.request("INSERT INTO USERS_SECTORS(ID_SECTOR, ID_USER) VALUES (?, ?)", [sector, params.id]);
+      sqlInstance.request("INSERT INTO USERS_SECTORS(ID_SECTOR, ID_USER) VALUES (?, ?)", [sector.id, params.id]);
     }
   })
 });
