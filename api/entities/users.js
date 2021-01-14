@@ -30,6 +30,7 @@ app.get('/users/:id', (request, response) => {
   });
 });
 
+// Method GET of all selected users data
 /**
  * @swagger
  *
@@ -58,7 +59,6 @@ app.get('/users/:id', (request, response) => {
  *
  *
  */
-// Method GET of all selected users data
 app.get('/users', (request, response) => {
   if(!request.body.ids){
     throw new Error('Error in parameters, ids missing');
@@ -172,6 +172,7 @@ app.post('/users', (request, response) => {
   })
 });
 
+// Method PUT to modify a user
 /**
  * @swagger
  *
@@ -217,7 +218,6 @@ app.post('/users', (request, response) => {
  *
  *
  */
-// Method PUT to modify a user
 app.put('/users/:id', (request, response) => {
   const params = request.body;
   if(!params.firstName || !params.lastName || !params.gender || !params.email || !params.phone || !params.sectors || !params.localization){
