@@ -68,7 +68,7 @@ app.get('/services/recommended', (request, response) => {
     throw new Error('Error in post parameters');
   }
   // Retrieve user localization
-  const { userLocX, userLocY } = params.localization.split(";");
+  const { userLocX, userLocY } = params.localization.split(",");
   // Start our request
   const closeServices = [];
   sqlInstance.request("SELECT * FROM SERVICES S, USERS U " +
@@ -77,7 +77,7 @@ app.get('/services/recommended', (request, response) => {
     [params.sectorIds]).then(result => {
     result.map(service => {
       // Retrieve service localization
-      const { serviceLocX, serviceLocY } = result.users[0].localization.split(";");
+      const { serviceLocX, serviceLocY } = result.users[0].localization.split(",");
       const d = getDistanceFromLatLonInKm(userLocX, userLocY, serviceLocX, serviceLocY);
       if (d <= params.maxDistance){
         closeServices.push(service);
