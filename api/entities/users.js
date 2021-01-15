@@ -256,7 +256,7 @@ app.put('/users/:id', (request, response) => {
 
 // todo: method to change a password
 
-// Method POST for a user
+// Method POST for a user login
 /**
  * @swagger
  *
@@ -301,9 +301,7 @@ app.post('/users/login', (request, response) => {
   // Select our user
   const sql = "SELECT TOKEN FROM USERS WHERE EMAIL = ? AND TOKEN = ? ";
   sqlInstance.request(sql,
-    [params.email,
-      token
-      ]).then(result => {
+    [params.email, token]).then(result => {
         if(result != null){
           // Return result if login valid
           response.send(result);
