@@ -3,12 +3,13 @@ import mysql from 'mysql';
 export default class SQLInstance{
 
   // App constructor create a MYSQL Connection
-  constructor(host, user, password, database) {
+  constructor(host, port, user, password, database ) {
     this.con = mysql.createConnection({
       host: host,
       user: user,
       password: password,
-      database: database
+      database: database,
+      port: port
     });
     console.log("SQL Connector created !");
   }
