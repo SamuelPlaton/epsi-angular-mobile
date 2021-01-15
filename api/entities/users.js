@@ -1,5 +1,6 @@
 import { app, sqlInstance } from '..';
 import { v4 as uuidv4 } from 'uuid';
+import { CryptoJS } from 'crypto-js';
 
 // Method GET of all data of a user
 /**
@@ -146,9 +147,13 @@ app.delete('/users/:id', (request, response) => {
 app.post('/users', (request, response) => {
   const params = request.body;
   const uuid = uuidv4();
+
   if(!params.firstName || !params.lastName || !params.gender || !params.email || !params.password || !params.birthDate || !params.phone || !params.sectors || !params.localization){
     throw new Error('Error in post parameters');
   }
+
+  // Crypt password
+  const token = CryptoJS.AES.encrypt(params.password, '22787802-a6e7-4c3d-8fc1-aab0ece1cb41').toString();
 
   // Insert our user
   const sql = "INSERT INTO USERS(ID, FIRSTNAME, LASTNAME, GENDER, EMAIL, TOKEN, BIRTHDATE, PHONE, LOCALIZATION) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)";
@@ -158,7 +163,7 @@ app.post('/users', (request, response) => {
     params.lastName,
     params.gender,
     params.email,
-    params.password,
+    token,
     params.birthDate,
     params.phone,
     params.localization]).then(result => {
@@ -250,4 +255,66 @@ app.put('/users/:id', (request, response) => {
 });
 
 // todo: method to change a password
-// todo: make connexion
+
+// Method POST for a user login
+/**
+ * @swagger
+ *
+ * /users/login:
+ *   post:
+ *     tags:
+ *       - users
+ *     produces:
+ *       - application/json
+ *     summary:
+ *       - Login a user
+ *     requestBody:
+ *      content:
+ *        application/json:
+ *          schema:
+ *            type: object
+ *            properties:
+ *            email:
+ *              type: string
+ *            password:
+ *              type: string
+ *            example:
+ *              email: string
+ *              password: string
+ *     responses:
+ *      '200':
+ *        description: Success
+ *      '401':
+ *        description: Fail
+ */
+app.post('/users/login', (request, response) => {
+  const params = request.body;
+
+  if(!params.email || !params.password ){
+    throw new Error('Error in post parameters');
+  }
+
+  // Decrypt password
+  const bytes  = CryptoJS.AES.decrypt(params.password, '22787802-a6e7-4c3d-8fc1-aab0ece1cb41');
+  const token = bytes.toString(CryptoJS.enc.Utf8);
+
+  // Select our user
+  const sql = "SELECT TOKEN FROM USERS WHERE EMAIL = ? AND TOKEN = ? ";
+  sqlInstance.request(sql,
+    [params.email, token]).then(result => {
+        if(result != null){
+          // Return result if login valid
+          response.send(result);
+          response.status(200).end();
+        }else{
+          // Return 401 if login failed
+          response.send("");
+          response.status(401).end();
+        }
+  });
+
+  // Insert his sectors
+  params.sectors.map(sector => {
+    sqlInstance.request("INSERT INTO USERS_SECTORS(ID_SECTOR, ID_USER) VALUES (?, ?)", [sector, uuid]);
+  })
+});
