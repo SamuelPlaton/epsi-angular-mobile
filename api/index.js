@@ -17,7 +17,6 @@ const options = {
 };
 const swaggerSpec = swaggerJSDoc(options);
 
-
 // Create our express App
 export const app = express();
 app.use(express.json());
