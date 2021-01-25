@@ -17,7 +17,11 @@ export default class SQLInstance{
   // Connect our MYSQL Connection
   connect(){
     this.con.connect(function(err) {
-      if (err) throw err;
+      if (err) {
+        console.log('Error connecting to the database...');
+        console.log(err);
+        throw err;
+      }
       console.log("Connected to the database !");
     });
   }

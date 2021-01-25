@@ -1,6 +1,10 @@
-import { app, sqlInstance } from '..';
+import express from 'express';
 import { v4 as uuidv4 } from 'uuid';
-import { CryptoJS } from 'crypto-js';
+import cryptoJS from 'crypto-js';
+import { sqlInstance } from '../index.js';
+
+const { CryptoJS } = cryptoJS;
+export const routes = express.Router();
 
 // Method GET of all data of a user
 /**
@@ -20,7 +24,8 @@ import { CryptoJS } from 'crypto-js';
  *
  *
  */
-app.get('/users/:id', (request, response) => {
+// todo: check
+routes.get('/users/:id', (request, response) => {
   // todo: don't retrieve tokens
   // Retrieve our Users, his sectors and services affiliated
   sqlInstance.request("SELECT * FROM USERS U, SECTORS S1, SERVICES S2 WHERE U.ID = ? " +
@@ -60,7 +65,8 @@ app.get('/users/:id', (request, response) => {
  *
  *
  */
-app.get('/users', (request, response) => {
+// todo: check
+routes.get('/users', (request, response) => {
   if(!request.body.ids){
     throw new Error('Error in parameters, ids missing');
   }
@@ -85,7 +91,8 @@ app.get('/users', (request, response) => {
  *      '204':
  *        description: DELETED
  */
-app.delete('/users/:id', (request, response) => {
+// todo: check
+routes.delete('/users/:id', (request, response) => {
   sqlInstance.request("DELETE FROM USERS WHERE ID = ?", [request.params.id]).then(result => {
     response.send("");
     response.status(204).end();
@@ -144,7 +151,8 @@ app.delete('/users/:id', (request, response) => {
  *
  *
  */
-app.post('/users', (request, response) => {
+// todo: check
+routes.post('/users', (request, response) => {
   const params = request.body;
   const uuid = uuidv4();
 
@@ -223,7 +231,8 @@ app.post('/users', (request, response) => {
  *
  *
  */
-app.put('/users/:id', (request, response) => {
+// todo: check
+routes.put('/users/:id', (request, response) => {
   const params = request.body;
   if(!params.firstName || !params.lastName || !params.gender || !params.email || !params.phone || !params.sectors || !params.localization){
     throw new Error('Error in post parameters');
@@ -287,7 +296,8 @@ app.put('/users/:id', (request, response) => {
  *      '401':
  *        description: Fail
  */
-app.post('/users/login', (request, response) => {
+// todo: check
+routes.post('/users/login', (request, response) => {
   const params = request.body;
 
   if(!params.email || !params.password ){

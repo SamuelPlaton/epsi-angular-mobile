@@ -1,6 +1,9 @@
-import { app, sqlInstance } from '../index';
+import express from 'express';
 import { v4 as uuidv4 } from 'uuid';
-import { getDistanceFromLatLonInKm } from '../helpers/distance';
+import { sqlInstance } from '../index.js';
+import { getDistanceFromLatLonInKm } from '../helpers/distance.js';
+
+export const routes = express.Router();
 
 // Method GET of a service
 /**
@@ -18,7 +21,7 @@ import { getDistanceFromLatLonInKm } from '../helpers/distance';
  *      '200':
  *        description: Array containing the service and the sectors and users related
  */
-app.get('/services/:id', (request, response) => {
+routes.get('/services/:id', (request, response) => {
   // todo: filter data to receive (on user)
   sqlInstance.request("SELECT * FROM SERVICES S1, SECTORS S2, USER U WHERE S1.ID = ? AND S2.ID = S1.SECTOR AND U.ID = S1.APPLICANT AND U.ID = S1.WORKER"
     [request.params.id]).then(result => {
@@ -61,7 +64,7 @@ app.get('/services/:id', (request, response) => {
  *
  *
  */
-app.get('/services/recommended', (request, response) => {
+routes.get('/services/recommended', (request, response) => {
   // Throw error if parameters are missing
   const params = request.body;
   if(!params.sectorIds || !params.localization || !params.maxDistance ){
@@ -126,7 +129,7 @@ app.get('/services/recommended', (request, response) => {
  *      '201':
  *        description: Posted
  */
-app.post('/services', (request, response) => {
+routes.post('/services', (request, response) => {
   const params = request.body;
   const uuid = uuidv4();
   if(!params.applicant || !params.title || !params.description || !params.sector || !params.exchangeType ){
@@ -187,7 +190,7 @@ app.post('/services', (request, response) => {
  *      '200':
  *        description: Updated
  */
-app.put('/services/:id', (request, response) => {
+routes.put('/services/:id', (request, response) => {
   const params = request.body;
   if(!params.worker || !params.title || !params.description || !params.state || !params.sector || !params.exchangeType || !params.id){
     throw new Error('Error in post parameters');
