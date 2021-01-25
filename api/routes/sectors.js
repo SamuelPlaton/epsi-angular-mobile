@@ -1,4 +1,7 @@
-import { app, sqlInstance } from '../index';
+import express from 'express';
+import { sqlInstance } from '../index.js';
+
+export const routes = express.Router();
 
 // Select all sectors
 /**
@@ -16,7 +19,7 @@ import { app, sqlInstance } from '../index';
  *      '200':
  *        description: Array of sectors
  */
-app.get('/sectors', (request, response) => {
+routes.get('/sectors', (request, response) => {
   sqlInstance.request("SELECT * FROM SECTORS").then(result => {
     response.send(result);
   });
@@ -52,7 +55,7 @@ app.get('/sectors', (request, response) => {
  *
  *
  */
-app.get('/sectors/selected', (request, response) => {
+routes.get('/sectors/selected', (request, response) => {
   sqlInstance.request("SELECT * FROM SECTORS WHERE ID IN ?", [request.body.sectors]).then(result => {
     response.send(result);
   });
