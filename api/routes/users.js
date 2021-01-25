@@ -65,12 +65,12 @@ routes.get('/users/:id', (request, response) => {
  *
  *
  */
-// todo: check
 routes.get('/users', (request, response) => {
   if(!request.body.ids){
     throw new Error('Error in parameters, ids missing');
   }
-  sqlInstance.request("SELECT * FROM USERS WHERE ID IN ?", [request.body.ids]).then(result => {
+  console.log(request.body.ids);
+  sqlInstance.request("SELECT ID, FIRSTNAME, LASTNAME, GENDER, EMAIL, REGISTER_DATE, BIRTH_DATE, PHONE, LOCALIZATION FROM USERS WHERE ID IN (?)", [request.body.ids]).then(result => {
     response.send(result);
   });
 });
@@ -86,17 +86,26 @@ routes.get('/users', (request, response) => {
  *     produces:
  *       - application/json
  *     summary:
- *       - Delete a user from the database
+ *       - Delete a user from the database (and his sectors and non solved services)
  *     responses:
  *      '204':
  *        description: DELETED
  */
-// todo: check
 routes.delete('/users/:id', (request, response) => {
-  sqlInstance.request("DELETE FROM USERS WHERE ID = ?", [request.params.id]).then(result => {
-    response.send("");
-    response.status(204).end();
-  });
+  try{
+    // Delete users_sectors
+    sqlInstance.request("DELETE FROM USERS_SECTORS WHERE ID_USER = ?", [request.params.id]);
+    // Delete waiting services
+    sqlInstance.request("DELETE FROM SERVICES WHERE APPLICANT = ? AND STATE != 'finished'", [request.params.id]);
+    // Delete user
+    sqlInstance.request("DELETE FROM USERS WHERE ID = ?", [request.params.id, request.params.id]).then(result => {
+      response.send("");
+    });
+  }catch(err){
+    throw new Error(err);
+  }
+
+
 });
 
 // Method POST for a user
