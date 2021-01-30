@@ -18,21 +18,66 @@ export const routes = express.Router();
  *       - application/json
  *     summary:
  *       - Get all data from a user
+ *     requestBody:
+ *      content:
+ *        application/json:
+ *          schema:
+ *            type: object
+ *            properties:
+ *            servicesApplicant:
+ *              type: string
+ *            servicesWorker:
+ *              type: string
+ *            userServices:
+ *              type: string
+ *            example:
+ *              servicesApplicant: true
+ *              servicesWorker: true
+ *              userServices: true
  *     responses:
  *      '200':
- *        description: A user and his sectors and services
+ *        description: User data is retrieved
  *
  *
  */
-// todo: check
 routes.get('/users/:id', (request, response) => {
-  // todo: don't retrieve tokens
   // Retrieve our Users, his sectors and services affiliated
-  sqlInstance.request("SELECT * FROM USERS U, SECTORS S1, SERVICES S2 WHERE U.ID = ? " +
-    "AND S1.ID IN (SELECT US.ID_SECTOR FROM USERS_SECTORS US WHERE US.ID_USER = ?) " +
-    "AND (S2.APPLICANT = U.ID OR S2.WORKER = U.ID)"
-    [request.params.id, request.params.id]).then(result => {
-    response.send(result);
+  const includes = request.body;
+  // Setup our default query and param
+  const query = ['SELECT U.FIRSTNAME, U.LASTNAME, U.GENDER, U.EMAIL, U.REGISTER_DATE, U.BIRTH_DATE, U.PHONE, U.LOCALIZATION, U.PROFILE_PICTURE FROM USERS U WHERE U.ID = ?'];
+  const queryParams = [request.params.id];
+  // Our queries index result
+  const idx = [0, null, null, null];
+  let acc = 0;
+  // Everytime an include is settled, we increment the index result
+  if(includes){
+    if(includes.servicesApplicant){
+      query.push('SELECT * FROM SERVICES S WHERE S.APPLICANT = ?');
+      queryParams.push(request.params.id);
+      acc += 1;
+      idx[1] = acc;
+    }
+    if(includes.servicesWorker){
+      query.push('SELECT * FROM SERVICES S WHERE S.WORKER = ?');
+      queryParams.push(request.params.id);
+      acc += 1;
+      idx[2] = acc;
+    }
+    if(includes.userSectors){
+      query.push('SELECT * FROM USERS_SECTORS US WHERE US.ID_USER = ?');
+      queryParams.push(request.params.id);
+      acc += 1;
+      idx[3] = acc;
+    }
+  }
+  // Set our final query
+  sqlInstance.request(query.join(';'), queryParams).then(result => {
+    response.send({
+      user: result[idx[0]],
+      userServiceApplicant : result[idx[1]],
+      userServiceWorker: result[idx[2]],
+      userSectors: result[idx[3]],
+    });
   });
 });
 
@@ -66,11 +111,10 @@ routes.get('/users/:id', (request, response) => {
  *
  */
 routes.get('/users', (request, response) => {
-  if(!request.body.ids){
+  if (!request.body.ids) {
     throw new Error('Error in parameters, ids missing');
   }
-  console.log(request.body.ids);
-  sqlInstance.request("SELECT ID, FIRSTNAME, LASTNAME, GENDER, EMAIL, REGISTER_DATE, BIRTH_DATE, PHONE, LOCALIZATION FROM USERS WHERE ID IN (?)", [request.body.ids]).then(result => {
+  sqlInstance.request('SELECT ID, FIRSTNAME, LASTNAME, GENDER, EMAIL, REGISTER_DATE, BIRTH_DATE, PHONE, LOCALIZATION FROM USERS WHERE ID IN (?)', [request.body.ids]).then(result => {
     response.send(result);
   });
 });
@@ -92,16 +136,16 @@ routes.get('/users', (request, response) => {
  *        description: DELETED
  */
 routes.delete('/users/:id', (request, response) => {
-  try{
+  try {
     // Delete users_sectors
-    sqlInstance.request("DELETE FROM USERS_SECTORS WHERE ID_USER = ?", [request.params.id]);
+    sqlInstance.request('DELETE FROM USERS_SECTORS WHERE ID_USER = ?', [request.params.id]);
     // Delete waiting services
-    sqlInstance.request("DELETE FROM SERVICES WHERE APPLICANT = ? AND STATE != 'finished'", [request.params.id]);
+    sqlInstance.request('DELETE FROM SERVICES WHERE APPLICANT = ? AND STATE != \'finished\'', [request.params.id]);
     // Delete user
-    sqlInstance.request("DELETE FROM USERS WHERE ID = ?", [request.params.id, request.params.id]).then(result => {
-      response.send("");
+    sqlInstance.request('DELETE FROM USERS WHERE ID = ?', [request.params.id, request.params.id]).then(result => {
+      response.send('');
     });
-  }catch(err){
+  } catch (err) {
     throw new Error(err);
   }
 
@@ -165,7 +209,7 @@ routes.post('/users', (request, response) => {
   const params = request.body;
   const uuid = uuidv4();
 
-  if(!params.firstName || !params.lastName || !params.gender || !params.email || !params.password || !params.birthDate || !params.phone || !params.sectors || !params.localization){
+  if (!params.firstName || !params.lastName || !params.gender || !params.email || !params.password || !params.birthDate || !params.phone || !params.sectors || !params.localization) {
     throw new Error('Error in post parameters');
   }
 
@@ -173,25 +217,25 @@ routes.post('/users', (request, response) => {
   const token = CryptoJS.AES.encrypt(params.password, '22787802-a6e7-4c3d-8fc1-aab0ece1cb41').toString();
 
   // Insert our user
-  const sql = "INSERT INTO USERS(ID, FIRSTNAME, LASTNAME, GENDER, EMAIL, TOKEN, BIRTHDATE, PHONE, LOCALIZATION) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)";
+  const sql = 'INSERT INTO USERS(ID, FIRSTNAME, LASTNAME, GENDER, EMAIL, TOKEN, BIRTHDATE, PHONE, LOCALIZATION) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)';
   sqlInstance.request(sql,
     [uuid,
-    params.firstName,
-    params.lastName,
-    params.gender,
-    params.email,
-    token,
-    params.birthDate,
-    params.phone,
-    params.localization]).then(result => {
-    response.send("");
+      params.firstName,
+      params.lastName,
+      params.gender,
+      params.email,
+      token,
+      params.birthDate,
+      params.phone,
+      params.localization]).then(result => {
+    response.send('');
     response.status(201).end();
   });
 
   // Insert his sectors
   params.sectors.map(sector => {
-    sqlInstance.request("INSERT INTO USERS_SECTORS(ID_SECTOR, ID_USER) VALUES (?, ?)", [sector, uuid]);
-  })
+    sqlInstance.request('INSERT INTO USERS_SECTORS(ID_SECTOR, ID_USER) VALUES (?, ?)', [sector, uuid]);
+  });
 });
 
 // Method PUT to modify a user
@@ -243,12 +287,12 @@ routes.post('/users', (request, response) => {
 // todo: check
 routes.put('/users/:id', (request, response) => {
   const params = request.body;
-  if(!params.firstName || !params.lastName || !params.gender || !params.email || !params.phone || !params.sectors || !params.localization){
+  if (!params.firstName || !params.lastName || !params.gender || !params.email || !params.phone || !params.sectors || !params.localization) {
     throw new Error('Error in post parameters');
   }
 
   // Update our user
-  const sql = "UPDATE USERS SET FIRSTNAME = ?, LASTNAME = ?, GENDER = ?, EMAIL = ?, PHONE = ?, LOCALIZATION = ? WHERE ID = ?";
+  const sql = 'UPDATE USERS SET FIRSTNAME = ?, LASTNAME = ?, GENDER = ?, EMAIL = ?, PHONE = ?, LOCALIZATION = ? WHERE ID = ?';
   sqlInstance.request(sql,
     [
       params.firstName,
@@ -258,18 +302,18 @@ routes.put('/users/:id', (request, response) => {
       params.phone,
       params.localization,
       params.id]).then(result => {
-    response.send("");
+    response.send('');
     response.status(200).end();
   });
 
   // Update his sectors
   params.sectors.map(sector => {
-    if(sector.state == "delete"){
-      sqlInstance.request("DELETE FROM USERS_SECTORS WHERE ID_SECTOR = ? AND ID_USER = ?", [sector.id, params.id]);
-    }else if(sector.state == "add" ){
-      sqlInstance.request("INSERT INTO USERS_SECTORS(ID_SECTOR, ID_USER) VALUES (?, ?)", [sector.id, params.id]);
+    if (sector.state == 'delete') {
+      sqlInstance.request('DELETE FROM USERS_SECTORS WHERE ID_SECTOR = ? AND ID_USER = ?', [sector.id, params.id]);
+    } else if (sector.state == 'add') {
+      sqlInstance.request('INSERT INTO USERS_SECTORS(ID_SECTOR, ID_USER) VALUES (?, ?)', [sector.id, params.id]);
     }
-  })
+  });
 });
 
 // todo: method to change a password
@@ -309,31 +353,31 @@ routes.put('/users/:id', (request, response) => {
 routes.post('/users/login', (request, response) => {
   const params = request.body;
 
-  if(!params.email || !params.password ){
+  if (!params.email || !params.password) {
     throw new Error('Error in post parameters');
   }
 
   // Decrypt password
-  const bytes  = CryptoJS.AES.decrypt(params.password, '22787802-a6e7-4c3d-8fc1-aab0ece1cb41');
+  const bytes = CryptoJS.AES.decrypt(params.password, '22787802-a6e7-4c3d-8fc1-aab0ece1cb41');
   const token = bytes.toString(CryptoJS.enc.Utf8);
 
   // Select our user
-  const sql = "SELECT TOKEN FROM USERS WHERE EMAIL = ? AND TOKEN = ? ";
+  const sql = 'SELECT TOKEN FROM USERS WHERE EMAIL = ? AND TOKEN = ? ';
   sqlInstance.request(sql,
     [params.email, token]).then(result => {
-        if(result != null){
-          // Return result if login valid
-          response.send(result);
-          response.status(200).end();
-        }else{
-          // Return 401 if login failed
-          response.send("");
-          response.status(401).end();
-        }
+    if (result != null) {
+      // Return result if login valid
+      response.send(result);
+      response.status(200).end();
+    } else {
+      // Return 401 if login failed
+      response.send('');
+      response.status(401).end();
+    }
   });
 
   // Insert his sectors
   params.sectors.map(sector => {
-    sqlInstance.request("INSERT INTO USERS_SECTORS(ID_SECTOR, ID_USER) VALUES (?, ?)", [sector, uuid]);
-  })
+    sqlInstance.request('INSERT INTO USERS_SECTORS(ID_SECTOR, ID_USER) VALUES (?, ?)', [sector, uuid]);
+  });
 });
