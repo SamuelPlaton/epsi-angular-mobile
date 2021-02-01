@@ -5,7 +5,7 @@ import swaggerJSDoc from 'swagger-jsdoc';
 import dotenv from 'dotenv';
 import { routes as sectorRouter } from './routes/sectors.js';
 import { routes as serviceRouter } from './routes/services.js';
-import { routes as userRouter } from './routes/users.js';
+import { deleteUserRouter, getUserRouter, postUserRouter, putUserRouter } from './routes/users/index.js';
 
 // Enable .env config variables
 dotenv.config();
@@ -23,7 +23,7 @@ const options = {
       version: '1.0.0',
     },
   },
-  apis: ['./routes/*.js'],
+  apis: ['./routes/*/*.js'],
 };
 const swaggerSpec = swaggerJSDoc(options);
 
@@ -33,7 +33,11 @@ app.use(express.json());
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.use('/', sectorRouter);
 app.use('/', serviceRouter);
-app.use('/', userRouter);
+// User routes
+app.use('/', postUserRouter);
+app.use('/', getUserRouter);
+app.use('/', deleteUserRouter);
+app.use('/', putUserRouter);
 
 // Make our app listen to port 3000
 app.listen(3000);

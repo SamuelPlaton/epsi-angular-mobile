@@ -9,7 +9,8 @@ export default class SQLInstance{
       user: user,
       password: password,
       database: database,
-      port: port
+      port: port,
+      multipleStatements: true
     });
     console.log("SQL Connector created !");
   }
