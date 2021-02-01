@@ -1,5 +1,6 @@
 import express from 'express';
 import { sqlInstance } from '../../index.js';
+import { checkToken } from '../security/security.js';
 
 export const routes = express.Router();
 
@@ -20,7 +21,22 @@ export const routes = express.Router();
  *        description: DELETED
  */
 // todo: token security
-routes.delete('/users/:id', (request, response) => {
+routes.delete('/users/:id', async (request, response) => {
+  const params = request.body;
+
+  if (!params.token) {
+    response.send('Bad parameters');
+    response.status(400).end();
+    return;
+  }
+
+  const properToken = await checkToken(params.token, request.params.id);
+  if(!properToken){
+    response.send('Wrong token');
+    response.status(403).end();
+    return;
+  }
+
   try {
     // Delete users_sectors
     sqlInstance.request('DELETE FROM USERS_SECTORS WHERE ID_USER = ?', [request.params.id]);
