@@ -16,11 +16,24 @@ export const routes = express.Router();
  *       - application/json
  *     summary:
  *       - Delete a user from the database (and his sectors and non solved services)
+ *     requestBody:
+ *      content:
+ *        application/json:
+ *          schema:
+ *            type: object
+ *            properties:
+ *            token:
+ *              type: string
+ *            example:
+ *              token: string
  *     responses:
  *      '204':
  *        description: DELETED
+ *      '400':
+ *        description: Bad parameters
+ *      '403':
+ *        description: Unauthorized
  */
-// todo: token security
 routes.delete('/users/:id', async (request, response) => {
   const params = request.body;
 
