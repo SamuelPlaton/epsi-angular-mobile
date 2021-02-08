@@ -32,8 +32,6 @@ export const routes = express.Router();
  *              type: string
  *            phone:
  *              type: string
- *            localization:
- *              type: string
  *            token:
  *              type: string
  *            example:
@@ -42,7 +40,6 @@ export const routes = express.Router();
  *              gender: male of female or other
  *              email: string
  *              phone: string
- *              localization: string
  *              token: string
  *     responses:
  *      '200':
@@ -55,7 +52,7 @@ export const routes = express.Router();
  */
 routes.put('/users/:id', async (request, response) => {
   const params = request.body;
-  if (!params.firstName || !params.lastName || !params.gender || !params.birthDate || !params.email || !params.localization || !params.token) {
+  if (!params.firstName || !params.lastName || !params.gender || !params.birthDate || !params.email || !params.token) {
     response.send('Bad parameters');
     response.status(400).end();
     return;
@@ -69,7 +66,7 @@ routes.put('/users/:id', async (request, response) => {
   }
 
   // Update our user
-  const sql = 'UPDATE USERS SET FIRSTNAME = ?, LASTNAME = ?, GENDER = ?, BIRTH_DATE = ?, EMAIL = ?, PHONE = ?, LOCALIZATION = ? WHERE ID = ?';
+  const sql = 'UPDATE USERS SET FIRSTNAME = ?, LASTNAME = ?, GENDER = ?, BIRTH_DATE = ?, EMAIL = ?, PHONE = ? WHERE ID = ?';
   sqlInstance.request(sql,
     [
       params.firstName,
@@ -78,7 +75,6 @@ routes.put('/users/:id', async (request, response) => {
       params.birthDate,
       params.email,
       params.phone,
-      params.localization,
       request.params.id]).then(result => {
     response.send('');
     response.status(200).end();
