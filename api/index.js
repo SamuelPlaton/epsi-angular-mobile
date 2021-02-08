@@ -3,8 +3,8 @@ import express from 'express';
 import swaggerUi from 'swagger-ui-express';
 import swaggerJSDoc from 'swagger-jsdoc';
 import dotenv from 'dotenv';
-import { routes as sectorRouter } from './routes/sectors.js';
 import { routes as serviceRouter } from './routes/services.js';
+import { getSectorRouter } from './routes/sectors/index.js';
 import { deleteUserRouter, getUserRouter, postUserRouter, putUserRouter } from './routes/users/index.js';
 
 // Enable .env config variables
@@ -31,8 +31,9 @@ const swaggerSpec = swaggerJSDoc(options);
 export const app = express();
 app.use(express.json());
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
-app.use('/', sectorRouter);
 app.use('/', serviceRouter);
+// Sector routes
+app.use('/', getSectorRouter);
 // User routes
 app.use('/', postUserRouter);
 app.use('/', getUserRouter);

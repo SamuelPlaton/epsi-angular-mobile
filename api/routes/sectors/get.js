@@ -1,5 +1,5 @@
 import express from 'express';
-import { sqlInstance } from '../index.js';
+import { sqlInstance } from '../../index.js';
 
 export const routes = express.Router();
 
@@ -26,7 +26,6 @@ routes.get('/sectors', (request, response) => {
 });
 
 // Select selected sectors
-// todo: check if it will be used
 /**
  * @swagger
  *
@@ -56,7 +55,7 @@ routes.get('/sectors', (request, response) => {
  *
  */
 routes.get('/sectors/selected', (request, response) => {
-  sqlInstance.request("SELECT * FROM SECTORS WHERE ID IN ?", [request.body.sectors]).then(result => {
+  sqlInstance.request("SELECT * FROM SECTORS WHERE ID IN (?)", [request.body.sectors]).then(result => {
     response.send(result);
   });
 });
