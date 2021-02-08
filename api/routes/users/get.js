@@ -104,14 +104,18 @@ routes.get('/users/:id', (request, response) => {
  *     responses:
  *      '200':
  *        description: Array of users
+ *      '400':
+ *        description: Bad parameters
  *
  *
  */
 routes.get('/users', (request, response) => {
   if (!request.body.ids) {
-    throw new Error('Error in parameters, ids missing');
+    response.send('Bad parameters');
+    response.status(400).end();
+    return;
   }
-  sqlInstance.request('SELECT ID, FIRSTNAME, LASTNAME, GENDER, EMAIL, REGISTER_DATE, BIRTH_DATE, PHONE, LOCALIZATION FROM USERS WHERE ID IN (?)', [request.body.ids]).then(result => {
+  sqlInstance.request('SELECT ID, FIRSTNAME, LASTNAME, GENDER, EMAIL, REGISTER_DATE, BIRTH_DATE, PHONE FROM USERS WHERE ID IN (?)', [request.body.ids]).then(result => {
     response.send(result);
   });
 });
