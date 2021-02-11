@@ -41,7 +41,7 @@ routes.get('/users/:id', (request, response) => {
   // Retrieve our Users, his sectors and services affiliated
   const includes = request.body;
   // Setup our default query and param
-  const query = ['SELECT U.FIRSTNAME, U.LASTNAME, U.GENDER, U.EMAIL, U.REGISTER_DATE, U.BIRTH_DATE, U.PHONE, U.LOCALIZATION, U.PROFILE_PICTURE FROM USERS U WHERE U.ID = ?'];
+  const query = ['SELECT U.FIRSTNAME, U.LASTNAME, U.GENDER, U.EMAIL, U.REGISTER_DATE, U.BIRTH_DATE, U.PHONE, U.PROFILE_PICTURE FROM USERS U WHERE U.ID = ?'];
   const queryParams = [request.params.id];
   // Our queries index result
   const idx = [0, null, null, null];
