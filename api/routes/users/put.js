@@ -65,6 +65,20 @@ routes.put('/users/:id', async (request, response) => {
     return;
   }
 
+  // Check if email or phone already exist
+  const emailExist = await sqlInstance.request('SELECT * FROM USERS WHERE EMAIL = ? AND ID != ?', [params.email, request.params.id]).then(result => {
+    return result.length > 0;
+  });
+  const phoneExist = await sqlInstance.request('SELECT * FROM USERS WHERE PHONE = ? AND ID != ?', [params.phone, request.params.id]).then(result => {
+    return result.length > 0;
+  });
+  if(emailExist || phoneExist){
+    emailExist && response.send('Email already exist');
+    !emailExist && phoneExist && response.send('Phone already exist');
+    response.status(403).end();
+    return;
+  }
+
   // Update our user
   const sql = 'UPDATE USERS SET FIRSTNAME = ?, LASTNAME = ?, GENDER = ?, BIRTH_DATE = ?, EMAIL = ?, PHONE = ? WHERE ID = ?';
   sqlInstance.request(sql,
