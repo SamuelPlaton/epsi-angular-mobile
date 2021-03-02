@@ -1,6 +1,7 @@
 import express from 'express';
 import { sqlInstance } from '../../index.js';
 import { checkToken } from '../security/security.js';
+import cryptoJS from "crypto-js";
 
 export const routes = express.Router();
 
@@ -156,4 +157,78 @@ routes.put('/users/sectors/:id', async (request, response) => {
   response.status(200).end();
 });
 
-// todo: method to change a password
+// Method PUT to modify a password user
+/**
+ * @swagger
+ *
+ * /users/password/:id:
+ *   put:
+ *     tags:
+ *       - users
+ *     produces:
+ *       - application/json
+ *     summary:
+ *       - Update a user password to the database
+ *     requestBody:
+ *      content:
+ *        application/json:
+ *          schema:
+ *            type: object
+ *            properties:
+ *            previousPassword:
+ *              type: string
+ *            newPassword:
+ *            token:
+ *              type: string
+ *            example:
+ *              previousPassword: string
+ *              newPassword: string
+ *              token: string
+ *     responses:
+ *      '200':
+ *        description: Password Updated
+ *     '400':
+ *        description: Bad parameters
+ *     '403':
+ *        description: Unauthorized
+ *
+ */
+routes.put('/users/password/:id', async (request, response) => {
+  const params = request.body;
+  if (!params.previousPassword || !params.newPassword || !params.token) {
+    response.send('Bad parameters');
+    response.status(400).end();
+    return;
+  }
+
+  const properToken = await checkToken(params.token, request.params.id);
+  if(!properToken){
+    response.send('Wrong token');
+    response.status(403).end();
+    return;
+  }
+
+  // Encrypt old password and compare it to token
+  const pwdToToken = cryptoJS.AES.encrypt(params.previousPassword, '22787802-a6e7-4c3d-8fc1-aab0ece1cb41');
+  const pwd = cryptoJS.AES.decrypt(pwdToToken, '22787802-a6e7-4c3d-8fc1-aab0ece1cb41').toString();
+  // Decrypt DB Token
+  const tokenToPwd = cryptoJS.AES.decrypt(params.token, '22787802-a6e7-4c3d-8fc1-aab0ece1cb41').toString();
+
+  if(pwd !== tokenToPwd){
+    response.send('Wrong previous password');
+    response.status(403).end();
+    return;
+  }
+  // Crypt new password
+  const newToken = cryptoJS.AES.encrypt(params.newPassword, '22787802-a6e7-4c3d-8fc1-aab0ece1cb41').toString();
+
+  // Update our user
+  const sql = 'UPDATE USERS SET TOKEN = ? WHERE ID = ?';
+  sqlInstance.request(sql,
+      [
+        newToken,
+        request.params.id]).then(result => {
+    response.send(newToken);
+    response.status(200).end();
+  });
+});
