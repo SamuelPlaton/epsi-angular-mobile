@@ -1,17 +1,17 @@
-export enum ExchangeTypeEnum {
-    coins = 'coins',
-    both = 'both',
-    mutual = 'mutual',
-  }
+export const ExchangeTypeEnum = {
+    coins: 'coins',
+    both: 'both',
+    mutual: 'mutual',
+  };
 
-export enum State {
-    preparation = 'preparation',
-    inService = 'in service',
-    served = 'served',
-    canceled = 'canceled',
-  }
+export const State = {
+    preparation: 'preparation',
+    inService: 'in service',
+    served: 'served',
+    canceled: 'canceled',
+  };
 
-interface Service {
+export interface Service {
     id: string;
 
     attributes: {
@@ -29,6 +29,4 @@ interface Service {
         sector: string;
     };
     
-}
-
-export default Service;
+};

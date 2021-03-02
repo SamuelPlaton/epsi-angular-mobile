@@ -1,10 +1,10 @@
-export enum GenderTypeEnum {
-    male = 'male',
-    female = 'female',
-    other = 'other',
+export const GenderTypeEnum = {
+    male: 'male',
+    female: 'female',
+    other: 'other',
   }
 
-interface User {
+export interface User {
     id: string;
 
     attributes: {
@@ -24,5 +24,3 @@ interface User {
         sectors: Array<string>;
     };
 }
-
-export default User;
