@@ -1,16 +1,18 @@
 interface Services {
-    id: String;
+    id: string;
 
     attributes: {
-        description: String;
-        creationDate: String;
-        state: String;
-        sector: String;
-        exchangeType: String;
+        title: string;
+        description: string;
+        localization: string;
+        creationDate: string;
+        state: string;
+        exchangeType: string;
     };
 
     relationships: {
         applicant: string;
         worker?: string;
+        secteur: string;
     };
 }

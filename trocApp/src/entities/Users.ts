@@ -1,20 +1,19 @@
 interface Users {
-    id: String;
+    id: string;
 
     attributes: {
-        firstname: String;
-        lastname: String;
-        gender: String;
-        email: String;
-        token: String;
-        registerDate: String;
-        birthDate: String;
-        phone: number;
-        localization: String;
-        profilePicture?: String;
+        firstName: string;
+        lastName: string;
+        gender: string;
+        email: string;
+        token: string;
+        registerDate: string;
+        birthDate: string;
+        phone?: number;
+        profilePicture?: string;
     };
 
     relationships: {
-        listUSers: Array<string>;
+        listUsers: Array<string>;
     };
 }
