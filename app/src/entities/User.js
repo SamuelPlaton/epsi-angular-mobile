@@ -12,7 +12,7 @@ export interface User {
         lastName: string;
         gender: GenderTypeEnum;
         email: string;
-        token: string;
+        token?: string;
         registerDate: string;
         birthDate: string;
         phone?: number;

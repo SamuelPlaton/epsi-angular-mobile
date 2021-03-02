@@ -1,5 +1,6 @@
 import SQLInstance from './SQLInstance.js';
 import express from 'express';
+import cors from 'cors';
 import swaggerUi from 'swagger-ui-express';
 import swaggerJSDoc from 'swagger-jsdoc';
 import dotenv from 'dotenv';
@@ -10,7 +11,7 @@ import { deleteUserRouter, getUserRouter, postUserRouter, putUserRouter } from '
 // Enable .env config variables
 dotenv.config();
 // Setup our sql instance
-export const sqlInstance = new SQLInstance(process.env.API_HOST, process.env.API_PORT, process.env.API_USER, process.env.API_PASSWORD, process.env.API_DATABASE);
+export const sqlInstance = new SQLInstance('localhost',3306, 'devmobile', 'epsi2021', 'troc');
 sqlInstance.connect();
 
 // Define our swagger doc
@@ -30,6 +31,8 @@ const swaggerSpec = swaggerJSDoc(options);
 // Create our express App
 export const app = express();
 app.use(express.json());
+app.use(cors());
+
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 // Sector routes
 app.use('/', getSectorRouter);

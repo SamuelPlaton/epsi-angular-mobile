@@ -1,35 +1,28 @@
 <template>
-  <div class='w-full flex flex-col border shadow-lg bg-gray-200'>
-    <div class='flex justify-between'>
+  <div class='w-full flex flex-col items-start border shadow-lg bg-gray-100 p-4' v-if="service && sector">
+    <div class='flex justify-between items-center w-full'>
       <p class='text-lg'>{{ service.attributes.title }}</p>
-      <p class=>{{ sector.attributes.title }}</p>
+      <p>{{ sector.attributes.title}}</p>
     </div>
-    <p class='text-gray-500 truncate'>{{ service.attributes.description }}</p>
-    <p class='text-sm'>{{ dateService }}</p>
+    <p class='truncate'>{{ service.attributes.description }}</p>
+    <p class='text-gray-500 text-sm'>{{ dateService }}</p>
   </div>
 </template>
 
 <script>
-import Api from "../../../../api/Api";
-import { Service } from "../../../../entities";
+import {Service, Sector} from "../../../../entities";
 import moment from "moment";
 
 export default {
   name: "ServiceListItem.vue",
   props: {
-    service: Object,
+    service: Service,
+    sector: Sector
   },
   data() {
     return {
-      sector: undefined,
-      dateService: '',
+      dateService: moment(this.service.attributes.creationDate).format('L'),
     }
-  },
-  async beforeCreate() {
-    this.applicant = Api.UsersApi.get(this.service.relationships.applicant);
-    const sectors = Api.SectorsApi.get();
-    this.sector = sectors.find(s => s.id === this.service.relationships.sector);
-    this.dateService = moment(this.service.attributes.creationDate).format('L');
   }
 };
 </script>

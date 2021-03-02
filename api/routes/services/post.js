@@ -50,16 +50,16 @@ export const routes = express.Router();
  *        description: Wrong token
  */
 routes.post('/services', async (request, response) => {
-  const params = request.body;
+  const {applicant, title, description, sector, exchangeType, localization, token} = request.body.data;
   const uuid = uuidv4();
   // Parameters check
-  if(!params.applicant || !params.title || !params.description || !params.sector || !params.exchangeType || !params.localization || !params.token){
+  if(!applicant || !title || !sector || !exchangeType || !localization || !token){
     response.send('Bad parameters');
     response.status(400).end();
     return;
   }
   // Token check
-  const properToken = await checkToken(params.token, params.applicant);
+  const properToken = await checkToken(token, applicant);
   if(!properToken){
     response.send('Wrong token');
     response.status(403).end();
@@ -69,12 +69,12 @@ routes.post('/services', async (request, response) => {
   const sql = "INSERT INTO SERVICES(ID, APPLICANT, TITLE, DESCRIPTION, SECTOR, EXCHANGE_TYPE, LOCALIZATION) VALUES(?, ?, ?, ?, ?, ?, ?)";
   sqlInstance.request(sql,
     [uuid,
-      params.applicant,
-      params.title,
-      params.description,
-      params.sector,
-      params.exchangeType,
-      params.localization]).then(result => {
+      applicant,
+      title,
+      description,
+      sector,
+      exchangeType,
+      localization]).then(result => {
     response.send("");
     response.status(201).end();
   });

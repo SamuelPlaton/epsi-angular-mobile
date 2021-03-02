@@ -44,25 +44,25 @@ export const routes = express.Router();
  */
 routes.get('/services/recommended', (request, response) => {
   // Throw error if parameters are missing
-  const params = request.body;
-  if(!params.sectorIds || !params.localization || !params.maxDistance ){
+  const {sectorIds, localization, maxDistance} = request.query;
+  if(!sectorIds || !localization || !maxDistance ){
     response.send('Bad parameters');
     response.status(400).end();
     return;
   }
   // Retrieve user localization
-  const [ userLocX, userLocY ] = params.localization.split(",");
+  const [ userLocX, userLocY ] = localization.split(",");
   // Start our request
   const closeServices = [];
   sqlInstance.request("SELECT * FROM SERVICES WHERE STATE = 'waiting' AND SECTOR IN (?) AND WORKER IS NULL",
-      [params.sectorIds]).then(result => {
+      [sectorIds.split(',')]).then(result => {
     result.map(service => {
       // Retrieve service localization
       const [ serviceLocX, serviceLocY ]= service.localization.split(",");
       // Get service distance
       const d = getDistanceFromLatLonInKm(parseFloat(userLocX), parseFloat(userLocY), parseFloat(serviceLocX), parseFloat(serviceLocY));
       // If distance is less than the max, we retrieve the service
-      if (d <= params.maxDistance){
+      if (d <= maxDistance){
         closeServices.push(service);
       }
     });
@@ -104,7 +104,7 @@ routes.get('/services/recommended', (request, response) => {
  */
 routes.get('/services/:id', (request, response) => {
   // Retrieve our Service, his sectors and users affiliated
-  const includes = request.body;
+  const includes = request.query;
   // Default query
   sqlInstance.request("SELECT * FROM SERVICES WHERE ID = ?", [request.params.id]).then(result => {
 

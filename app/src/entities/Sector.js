@@ -1,6 +1,6 @@
 export interface Sector {
-    id: String;
+    id: number;
     attributes: {
-        title: String;
+        title: string;
     };
 }

@@ -39,7 +39,7 @@ export const routes = express.Router();
  */
 routes.get('/users/:id', (request, response) => {
   // Retrieve our Users, his sectors and services affiliated
-  const includes = request.body;
+  const includes = request.query;
   // Setup our default query and param
   const query = ['SELECT U.FIRSTNAME, U.LASTNAME, U.GENDER, U.EMAIL, U.REGISTER_DATE, U.BIRTH_DATE, U.PHONE, U.PROFILE_PICTURE FROM USERS U WHERE U.ID = ?'];
   const queryParams = [request.params.id];
@@ -110,12 +110,13 @@ routes.get('/users/:id', (request, response) => {
  *
  */
 routes.get('/users', (request, response) => {
-  if (!request.body.ids) {
+  const {ids} = request.query;
+  if (!ids) {
     response.send('Bad parameters');
     response.status(400).end();
     return;
   }
-  sqlInstance.request('SELECT ID, FIRSTNAME, LASTNAME, GENDER, EMAIL, REGISTER_DATE, BIRTH_DATE, PHONE FROM USERS WHERE ID IN (?)', [request.body.ids]).then(result => {
+  sqlInstance.request('SELECT ID, FIRSTNAME, LASTNAME, GENDER, EMAIL, REGISTER_DATE, BIRTH_DATE, PHONE FROM USERS WHERE ID IN (?)', [ids.split(',')]).then(result => {
     response.send(result);
   });
 });
