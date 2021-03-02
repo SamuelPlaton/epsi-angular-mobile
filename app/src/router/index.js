@@ -1,6 +1,6 @@
 import Vue from "vue";
 import VueRouter from "vue-router";
-import { Home, Detail, List, Quiz, Hangman, CurrencyConverter } from "../views";
+import { Home, ServiceDetail, List, Quiz, Hangman, CurrencyConverter } from "../views";
 
 Vue.use(VueRouter);
 
@@ -16,9 +16,9 @@ const routes = [
     component: List
   },
   {
-    path: "/detail/:country",
-    name: "Detail",
-    component: Detail
+    path: "/ServiceDetail/:service",
+    name: "ServiceDetail",
+    component: ServiceDetail
   },
   {
     path: "/quiz",
