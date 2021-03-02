@@ -7,7 +7,7 @@ import axios from "axios";
 import { ServiceInfo } from "@/components";
 
 export default {
-  name: "Detail",
+  name: "ServiceDetail",
   components: { ServiceInfo },
   data() {
     return {
@@ -15,6 +15,7 @@ export default {
     };
   },
   async beforeCreate() {
+      console.log("yooooooo");
     const service = this.$route.params.service;
     await axios
 
