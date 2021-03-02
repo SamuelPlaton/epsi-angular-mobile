@@ -55,7 +55,7 @@ routes.get('/sectors', (request, response) => {
  *
  */
 routes.get('/sectors/selected', (request, response) => {
-  sqlInstance.request("SELECT * FROM SECTORS WHERE ID IN (?)", [request.body.sectors]).then(result => {
+  sqlInstance.request("SELECT * FROM SECTORS WHERE ID IN (?)", [request.query.sectors.split(',')]).then(result => {
     response.send(result);
   });
 });

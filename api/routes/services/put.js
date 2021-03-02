@@ -40,9 +40,9 @@ export const routes = express.Router();
  *            example:
  *              userId: user Id
  *              userToken: user Token
- *              worker: worker id
+ *              worker: worker id (optional)
  *              title: string
- *              description: string
+ *              description: string (optional)
  *              sector: sector Id
  *              exchangeType: mutual, coin or both
  *              state: waiting, in progress, finished or canceled
@@ -55,14 +55,14 @@ export const routes = express.Router();
  *        description: Wrong token
  */
 routes.put('/services/:id', async (request, response) => {
-  const params = request.body;
-  if(!params.worker || !params.title || !params.description || !params.state || !params.sector || !params.exchangeType || !params.localization || !params.userId || !params.userToken){
+  const {worker, title, description, state, sector, exchangeType, localization, userId, userToken} = request.body.data;
+  if(!title || !description || !state || !sector || !exchangeType || !localization || !userId || !userToken){
     response.send('Bad parameters');
     response.status(400).end();
     return;
   }
   // Token check
-  const properToken = await checkToken(params.userToken, params.userId);
+  const properToken = await checkToken(userToken, userId);
   if(!properToken){
     response.send('Wrong token');
     response.status(403).end();
@@ -72,13 +72,13 @@ routes.put('/services/:id', async (request, response) => {
   const sql = "UPDATE SERVICES SET WORKER = ?, TITLE = ?, DESCRIPTION = ?, STATE = ?, SECTOR = ?, EXCHANGE_TYPE = ?, LOCALIZATION = ? WHERE ID = ?";
   sqlInstance.request(sql,
     [
-      params.worker,
-      params.title,
-      params.description,
-      params.state,
-      params.sector,
-      params.exchangeType,
-      params.localization,
+      worker,
+      title,
+      description,
+      state,
+      sector,
+      exchangeType,
+      localization,
       request.params.id]).then(result => {
     response.send("");
     response.status(200).end();

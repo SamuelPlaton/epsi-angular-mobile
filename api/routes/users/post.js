@@ -53,22 +53,22 @@ export const routes = express.Router();
  *
  */
 routes.post('/users', async (request, response) => {
-  const params = request.body;
+  const {firstName, lastName, gender, email, password, birthDate, phone} = request.body.data;
   const uuid = uuidv4();
 
-  if (!params.firstName || !params.lastName || !params.gender || !params.email || !params.password || !params.birthDate) {
+  if (!firstName || !lastName || !gender || !email || !password || !birthDate) {
     response.send('Bad parameters');
     response.status(400).end();
     return;
   }
   // Crypt password
-  const token = cryptoJS.AES.encrypt(params.password, '22787802-a6e7-4c3d-8fc1-aab0ece1cb41').toString();
+  const token = cryptoJS.AES.encrypt(password, '22787802-a6e7-4c3d-8fc1-aab0ece1cb41').toString();
 
   // Check if email or phone already exist
-  const emailExist = await sqlInstance.request('SELECT * FROM USERS WHERE EMAIL = ?', [params.email]).then(result => {
+  const emailExist = await sqlInstance.request('SELECT * FROM USERS WHERE EMAIL = ?', [email]).then(result => {
     return result.length > 0;
   });
-  const phoneExist = await sqlInstance.request('SELECT * FROM USERS WHERE PHONE = ?', [params.phone]).then(result => {
+  const phoneExist = await sqlInstance.request('SELECT * FROM USERS WHERE PHONE = ?', [phone]).then(result => {
     return result.length > 0;
   });
   if(emailExist || phoneExist){
@@ -82,13 +82,13 @@ routes.post('/users', async (request, response) => {
   const sql = 'INSERT INTO USERS(ID, FIRSTNAME, LASTNAME, GENDER, EMAIL, TOKEN, BIRTH_DATE, PHONE) VALUES(?, ?, ?, ?, ?, ?, ?, ?)';
   sqlInstance.request(sql,
     [uuid,
-      params.firstName,
-      params.lastName,
-      params.gender,
-      params.email,
+      firstName,
+      lastName,
+      gender,
+      email,
       token,
-      params.birthDate,
-      params.phone]).then(result => {
+      birthDate,
+      phone]).then(result => {
     response.send(token);
     response.status(201).end();
   });
@@ -129,16 +129,15 @@ routes.post('/users', async (request, response) => {
  *        description: Wrong email or password
  */
 routes.post('/users/login', async (request, response) => {
-  const params = request.body;
-
-  if (!params.email || !params.password) {
+  const {email, password} = request.body.data;
+  if (!email || !password) {
     response.send('Bad parameters');
     response.status(400).end();
     return;
   }
   // Retrieve token if the email is found
   const tokenResult = await sqlInstance.request("SELECT TOKEN FROM USERS WHERE EMAIL = ? LIMIT 1",
-    [params.email]).then(result => {
+    [email]).then(result => {
     return result;
   });
   if (tokenResult.length === 0) {
@@ -148,7 +147,7 @@ routes.post('/users/login', async (request, response) => {
   }
 
   // Encrypt then decrypt password
-  const pwdToToken = cryptoJS.AES.encrypt(params.password, '22787802-a6e7-4c3d-8fc1-aab0ece1cb41');
+  const pwdToToken = cryptoJS.AES.encrypt(password, '22787802-a6e7-4c3d-8fc1-aab0ece1cb41');
   const pwd = cryptoJS.AES.decrypt(pwdToToken, '22787802-a6e7-4c3d-8fc1-aab0ece1cb41').toString();
   // Decrypt DB Token
   const tokenToPwd = cryptoJS.AES.decrypt(tokenResult[0]['TOKEN'], '22787802-a6e7-4c3d-8fc1-aab0ece1cb41').toString();
